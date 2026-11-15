@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+- **Fixed the page area being far too short** (it only filled the height of the side rail, leaving the rest of the window blank). Web pages, full-screen video and picture-in-picture now use the whole window.
+- Full-screen video now hides the find bar and save-password bar too, and leaving the window's full screen with its controls also ends the video's full screen.
+
 ## 1.0.0
 - First release of Cirrus.
 - Google search with suggestions, tabs, private tabs, bookmarks, history, downloads, find in page, zoom, DevTools.

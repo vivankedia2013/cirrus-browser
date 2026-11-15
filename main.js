@@ -121,6 +121,7 @@ const PERM = { media: 'use your camera and microphone', geolocation: 'know your 
   midi: 'use your MIDI devices', midiSysex: 'use your MIDI devices', 'clipboard-read': 'read your clipboard', 'display-capture': 'record your screen' };
 const AUTO = new Set(['fullscreen', 'clipboard-sanitized-write', 'pointerLock', 'keyboardLock']);
 const hostOf = u => { try { return new URL(u).hostname || u; } catch { return u; } };
+let fsWc = null, fsWas = false;      // which page asked for full screen, and whether the window was already full screen
 const secured = new WeakSet();
 let dlId = 0; const dlPaths = {};
 
@@ -194,6 +195,9 @@ app.on('web-contents-created', (e, wc) => {
   });
   wc.on('before-input-event', (ev, input) => { const a = shortcut(input); if (a) { ev.preventDefault(); win.webContents.send('shortcut', a); } });
   wc.on('context-menu', (ev, p) => pageMenu(wc, p, priv));
+  // Video full screen (YouTube, Netflix...) inside a <webview> only fills the page. Make the whole window go full screen too.
+  wc.on('enter-html-full-screen', () => { if (!win) return; fsWc = wc; fsWas = win.isFullScreen(); if (!fsWas) win.setFullScreen(true); });
+  wc.on('leave-html-full-screen', () => { if (!win || fsWc !== wc) return; fsWc = null; if (!fsWas) win.setFullScreen(false); });
 });
 
 // ---------- Window ----------
@@ -210,6 +214,11 @@ function createWindow() {
   });
   win.webContents.on('will-navigate', ev => ev.preventDefault());       // the browser UI itself never navigates
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  // If the user leaves full screen with the window controls, also end the video's full screen
+  win.on('leave-full-screen', () => {
+    if (!fsWc) return; const w = fsWc; fsWc = null;
+    try { w.executeJavaScript('document.fullscreenElement && document.exitFullscreen()').catch(() => {}); } catch {}
+  });
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
   win.on('closed', () => { win = null; });
 }

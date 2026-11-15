@@ -1,6 +1,6 @@
 {
   "name": "cirrus-browser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Cirrus: a fast, private browser with a built-in AI tab, a CPU/RAM limiter, a password vault and a login page",
   "main": "main.js",
   "scripts": {
